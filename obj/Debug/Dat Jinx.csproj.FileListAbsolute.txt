@@ -1,0 +1,11 @@
+C:\Desktop\Elobuddy\JinxBuddy.exe.config
+C:\Desktop\Elobuddy\JinxBuddy.exe
+C:\Desktop\Elobuddy\JinxBuddy.pdb
+C:\Users\Mertss\Desktop\JinxBuddy\JinxBuddy\obj\Debug\Dat Jinx.csprojResolveAssemblyReference.cache
+C:\Users\Mertss\Desktop\JinxBuddy\JinxBuddy\obj\Debug\JinxBuddy.exe
+C:\Users\Mertss\Desktop\JinxBuddy\JinxBuddy\obj\Debug\JinxBuddy.pdb
+C:\Users\Mertss\Desktop\Dat Jinx\Dat Jinx\obj\Debug\JinxBuddy.exe
+C:\Users\Mertss\Desktop\Dat Jinx\Dat Jinx\obj\Debug\JinxBuddy.pdb
+C:\Users\Mertss\Desktop\My Addons\Dat Jinx\Dat Jinx\obj\Debug\Dat Jinx.csprojResolveAssemblyReference.cache
+C:\Users\Mertss\Desktop\My Addons\Dat Jinx\Dat Jinx\obj\Debug\JinxBuddy.exe
+C:\Users\Mertss\Desktop\My Addons\Dat Jinx\Dat Jinx\obj\Debug\JinxBuddy.pdb
