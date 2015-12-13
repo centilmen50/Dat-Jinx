@@ -39,6 +39,8 @@ namespace DatJinx
             {
                 return;
             }
+            Teleport.OnTeleport += Teleport_OnTeleport;
+
             Q = new Spell.Active(SpellSlot.Q);
             W = new Spell.Skillshot(SpellSlot.W, 1450, SkillShotType.Linear, 600, 3300, 75)
             {
@@ -46,7 +48,7 @@ namespace DatJinx
                 AllowedCollisionCount = 0
             };
             E = new Spell.Skillshot(SpellSlot.E, 900, SkillShotType.Circular, 1200, 1750, 1);
-            R = new Spell.Skillshot(SpellSlot.R, 2000, SkillShotType.Linear, 700, 1500, 140);            
+            R = new Spell.Skillshot(SpellSlot.R, 3000, SkillShotType.Linear, 700, 1500, 140);            
 
             Menu = MainMenu.AddMenu("Dat Jinx", "DatJinx");
 
@@ -63,11 +65,10 @@ namespace DatJinx
             HarassSettings = Menu.AddSubMenu("Harass Settings", "HarassSettings");
             HarassSettings.AddSeparator();
             HarassSettings.Add("useQHarass", new CheckBox("Use Q"));
-            HarassSettings.Add("useQHarassMana", new Slider("Mana > ", 35, 0, 100));
             HarassSettings.Add("useWHarass", new CheckBox("Use W"));
-            HarassSettings.Add("useWHarassMana", new Slider("Mana > ", 20, 0, 100));
+            HarassSettings.Add("useWHarassMana", new Slider("W Mana > ", 20, 0, 100));
             HarassSettings.Add("useEHarass", new CheckBox("Use E"));
-            HarassSettings.Add("useEHarassMana", new Slider("Mana > ", 35, 0, 100));
+            HarassSettings.Add("useEHarassMana", new Slider("E Mana > ", 35, 0, 100));
 
             ClearSettings = Menu.AddSubMenu("Lane Clear Settings", "FarmSettings");
             ClearSettings.AddSeparator();
@@ -95,6 +96,9 @@ namespace DatJinx
             DrawMenu.Add("draw.W", new CheckBox("W Calculate"));
             DrawMenu.Add("draw.E", new CheckBox("E Calculate"));
             DrawMenu.Add("draw.R", new CheckBox("R Calculate"));
+            DrawMenu.AddSeparator();
+            DrawMenu.AddLabel("Recall Tracker");
+            DrawMenu.Add("draw.Recall", new CheckBox("Chat Print"));
 
             Game.OnTick += Game_OnTick;
             Gapcloser.OnGapcloser += Gapcloser_OnGapCloser;
@@ -111,7 +115,33 @@ namespace DatJinx
                 E.Cast(sender);
             }
         }
+        //Recall Tracker Start
+        private static string FormatTime(double time)
+        {
+            var t = TimeSpan.FromSeconds(time);
+            return string.Format("{0:D2}:{1:D2}", t.Minutes, t.Seconds);
+        }
 
+        private static void Teleport_OnTeleport(Obj_AI_Base sender, Teleport.TeleportEventArgs args)
+        {
+            if (sender.Team == _Player.Team || !DrawMenu["draw.Recall"].Cast<CheckBox>().CurrentValue) return;
+
+            if (args.Status == TeleportStatus.Start)
+            {
+                //Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + sender.BaseSkinName + " has <font color='#00ff66'>started</font> recall.");
+            }
+
+            if (args.Status == TeleportStatus.Abort)
+            {
+                //Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + sender.BaseSkinName + " has <font color='#ff0000'>aborted</font> recall.");
+            }
+
+            if (args.Status == TeleportStatus.Finish)
+            {
+                //Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + sender.BaseSkinName + " has <font color='#fdff00'>finished</font> recall.");
+            }
+        }
+        //Recall Tracker Finish
         private static void Game_OnTick(EventArgs args)
         {
             Orbwalker.ForcedTarget = null;
@@ -132,7 +162,8 @@ namespace DatJinx
             {
                 LastHit();
             }
-            Auto();           
+            Auto();
+            KS();        
         }
         public static void Auto()
         {
@@ -152,6 +183,10 @@ namespace DatJinx
                     }
                 }
             }
+        }
+        public static void AutoR()
+        {
+
         }
         public static void LastHit()
         {
@@ -203,6 +238,8 @@ namespace DatJinx
         {
             var targetW = TargetSelector.GetTarget(W.Range, DamageType.Physical);
             var target = TargetSelector.GetTarget((!FishBonesActive ? _Player.AttackRange + FishBonesBonus : _Player.AttackRange) + 300, DamageType.Physical);
+            var Wmana = HarassSettings["useWHarassMana"].Cast<Slider>().CurrentValue;
+            var Emana = HarassSettings["useEHarassMana"].Cast<Slider>().CurrentValue;
 
             Orbwalker.ForcedTarget = null;
 
@@ -213,7 +250,7 @@ namespace DatJinx
                 // W out of range
                 if (HarassSettings["useWHarass"].Cast<CheckBox>().CurrentValue && W.IsReady() &&
                     target.Distance(_Player) > _Player.AttackRange &&
-                    targetW.IsValidTarget(W.Range))
+                    targetW.IsValidTarget(W.Range) && _Player.ManaPercent > Wmana)
                 {
                     W.Cast(targetW);
                 }
@@ -293,10 +330,9 @@ namespace DatJinx
         {
             var targetW = TargetSelector.GetTarget(W.Range, DamageType.Physical);
             var target = TargetSelector.GetTarget((!FishBonesActive ? _Player.AttackRange + FishBonesBonus : _Player.AttackRange) + 300, DamageType.Physical);
-            var rtarget = TargetSelector.GetTarget(3000, DamageType.Physical);
+            var rtarget = TargetSelector.GetTarget(R.Range, DamageType.Physical);
             // KİLLSTEAL
             var wPred = W.GetPrediction(targetW);
-            var rPred = R.GetPrediction(rtarget);
 
             if (ComboSettings["useWCombo"].Cast<CheckBox>().CurrentValue &&
                 wPred.HitChance >= HitChance.Medium && W.IsReady() && targetW.IsValidTarget(W.Range) &&
@@ -304,11 +340,11 @@ namespace DatJinx
             {
                 W.Cast(targetW);
             }
-            if (ComboSettings["useRCombo"].Cast<CheckBox>().CurrentValue &&
-                rPred.HitChance >= HitChance.Medium && R.IsReady() && rtarget.IsValidTarget(R.Range) &&
-                DamageLibrary.CalculateDamage(target, false, false, false, true) >= rtarget.Health)
-            {
+            if (ComboSettings["useRCombo"].Cast<CheckBox>().CurrentValue && R.IsReady() && rtarget.IsValidTarget(R.Range) &&
+                RDamageHesap.CalculateDamage(rtarget, true) >= rtarget.Health && rtarget.Distance(_Player) > _Player.AttackRange)
+            {               
                 R.Cast(rtarget);
+                Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + rtarget.BaseSkinName + " has <font color='#E238EC'>sniped!</font>");
             }
         }
         public static void Combo()

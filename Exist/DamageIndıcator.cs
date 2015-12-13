@@ -44,14 +44,11 @@ namespace DatJinx
                 var drawR = DatJinx.Program.DrawMenu["draw.R"].Cast<CheckBox>().CurrentValue;
 
                 var damage = (BarLength)
-                             * ((DamageLibrary.CalculateDamage(aiHeroClient, drawQ, drawW, drawE, drawR)
+                             * ((RDamageHesap.CalculateDamage(aiHeroClient, drawR)
                                  / aiHeroClient.MaxHealth) > 1
                                     ? 1
-                                    : (DamageLibrary.CalculateDamage(
-                                        aiHeroClient,
-                                        drawQ,
-                                        drawW,
-                                        drawE,
+                                    : (RDamageHesap.CalculateDamage(
+                                        aiHeroClient,                                     
                                         drawR) / aiHeroClient.MaxHealth));
 
                 Line.DrawLine(
