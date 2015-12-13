@@ -54,15 +54,20 @@ namespace DatJinx
             ComboSettings.AddSeparator();
             ComboSettings.Add("useQCombo", new CheckBox("Use Q"));
             ComboSettings.Add("useQAoE", new CheckBox("Use Q AoE"));
+            ComboSettings.Add("useQAoECount", new Slider("Enemy Count >= ", 2, 1, 5));
             ComboSettings.Add("useWCombo", new CheckBox("Use W"));
             ComboSettings.Add("useECombo", new CheckBox("Use E"));
             ComboSettings.Add("useRCombo", new CheckBox("Use R"));
+            ComboSettings.Add("useRComboRange", new Slider("Range < ", 2000, 0, 3000));
 
             HarassSettings = Menu.AddSubMenu("Harass Settings", "HarassSettings");
             HarassSettings.AddSeparator();
             HarassSettings.Add("useQHarass", new CheckBox("Use Q"));
+            HarassSettings.Add("useQHarassMana", new Slider("Mana > ", 35, 0, 100));
             HarassSettings.Add("useWHarass", new CheckBox("Use W"));
+            HarassSettings.Add("useWHarassMana", new Slider("Mana > ", 20, 0, 100));
             HarassSettings.Add("useEHarass", new CheckBox("Use E"));
+            HarassSettings.Add("useEHarassMana", new Slider("Mana > ", 35, 0, 100));
 
             ClearSettings = Menu.AddSubMenu("Lane Clear Settings", "FarmSettings");
             ClearSettings.AddSeparator();
@@ -83,6 +88,13 @@ namespace DatJinx
             DrawMenu.Add("drawRange", new CheckBox("Draw AA Range"));
             DrawMenu.Add("drawW", new CheckBox("Draw W Range"));
             DrawMenu.Add("drawE", new CheckBox("Draw E Range"));
+            DrawMenu.AddSeparator();
+            DrawMenu.AddLabel("Damage Calculation");
+            DrawMenu.Add("draw.Damage", new CheckBox("Draw Damage"));
+            DrawMenu.Add("draw.Q", new CheckBox("Q Calculate"));
+            DrawMenu.Add("draw.W", new CheckBox("W Calculate"));
+            DrawMenu.Add("draw.E", new CheckBox("E Calculate"));
+            DrawMenu.Add("draw.R", new CheckBox("R Calculate"));
 
             Game.OnTick += Game_OnTick;
             Gapcloser.OnGapcloser += Gapcloser_OnGapCloser;
@@ -162,9 +174,9 @@ namespace DatJinx
                         .Where(
                             a =>
                                 a.IsValidTarget(MinigunRange(a) + FishBonesBonus) &&
-                                a.Health < Player.Instance.GetAutoAttackDamage(a)*1.1)
+                                a.Health < _Player.GetAutoAttackDamage(a)*1.1)
                         .FirstOrDefault(minion => EntityManager.MinionsAndMonsters.EnemyMinions.Count(
-                            a => a.Distance(minion) < 150 && a.Health < Player.Instance.GetAutoAttackDamage(a)*1.1) > 1);
+                            a => a.Distance(minion) < 150 && a.Health < _Player.GetAutoAttackDamage(a)*1.1) > 1);
 
                 if (unit != null)
                 {
@@ -284,12 +296,19 @@ namespace DatJinx
             var rtarget = TargetSelector.GetTarget(3000, DamageType.Physical);
             // KİLLSTEAL
             var wPred = W.GetPrediction(targetW);
+            var rPred = R.GetPrediction(rtarget);
 
             if (ComboSettings["useWCombo"].Cast<CheckBox>().CurrentValue &&
                 wPred.HitChance >= HitChance.Medium && W.IsReady() && targetW.IsValidTarget(W.Range) &&
                 WDamage(target) >= rtarget.Health)
             {
-                W.Cast(rtarget);
+                W.Cast(targetW);
+            }
+            if (ComboSettings["useRCombo"].Cast<CheckBox>().CurrentValue &&
+                rPred.HitChance >= HitChance.Medium && R.IsReady() && rtarget.IsValidTarget(R.Range) &&
+                DamageLibrary.CalculateDamage(target, false, false, false, true) >= rtarget.Health)
+            {
+                R.Cast(rtarget);
             }
         }
         public static void Combo()
@@ -319,10 +338,11 @@ namespace DatJinx
 
             if (ComboSettings["useQAoE"].Cast<CheckBox>().CurrentValue)
             {
+                var enemycount = ComboSettings["useQAoECount"].Cast<Slider>().CurrentValue;
                 // ALAN(AOE) LOGİC
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(
                     a => a.IsValidTarget(MinigunRange(a) + FishBonesBonus))
-                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(200) > 1 && (enemy.NetworkId == target.NetworkId || enemy.Distance(target) < 150)))
+                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(200) >= enemycount && (enemy.NetworkId == target.NetworkId || enemy.Distance(target) < 150)))
                 {
                     if (!FishBonesActive)
                     {
@@ -366,7 +386,15 @@ namespace DatJinx
                     (new double[] { 80, 135, 190, 245, 300 }[E.Level - 1]
                                     + 1 * _Player.FlatMagicDamageMod);
         }
-       
+
+        public static int RDamage(Obj_AI_Base target)
+        {
+            return
+                (int)
+                    (new double[] { 250, 350, 450 }[R.Level - 1]
+                                    + 0.5 * _Player.TotalAttackDamage);
+        }
+
         //DRAWİNGS
         private static void Drawing_OnDraw(EventArgs args)
         {
