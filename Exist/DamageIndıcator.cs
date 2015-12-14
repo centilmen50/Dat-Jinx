@@ -8,7 +8,7 @@ using Color = System.Drawing.Color;
 
 namespace DatJinx
 {
-
+    //NOT WORK
     public class DamageIndicator
     {
         private const float BarLength = 104;

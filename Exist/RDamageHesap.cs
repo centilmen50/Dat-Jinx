@@ -14,7 +14,7 @@ namespace DatJinx
         {
             var totaldamage = 0f;
 
-            if (R && DatJinx.Program.R.IsReady())
+            if (DatJinx.Program.R.IsReady())
             {
                 totaldamage = totaldamage + RDamage(target);
             }

@@ -26,7 +26,7 @@ namespace DatJinx
         public static Spell.Skillshot E;
         public static Spell.Skillshot R;        
 
-        public static Menu Menu, ComboSettings, HarassSettings, ClearSettings, AutoSettings, DrawMenu;
+        public static Menu Menu, ComboSettings, HarassSettings, ClearSettings, AutoSettings, DrawMenu, Predictions;
 
         private static void Main(string[] args)
         {
@@ -48,30 +48,33 @@ namespace DatJinx
                 AllowedCollisionCount = 0
             };
             E = new Spell.Skillshot(SpellSlot.E, 900, SkillShotType.Circular, 1200, 1750, 1);
-            R = new Spell.Skillshot(SpellSlot.R, 3000, SkillShotType.Linear, 700, 1500, 140);            
+            R = new Spell.Skillshot(SpellSlot.R, 2000, SkillShotType.Linear, 700, 1500, 140);            
 
             Menu = MainMenu.AddMenu("Dat Jinx", "DatJinx");
 
             ComboSettings = Menu.AddSubMenu("Combo Settings", "ComboSettings");
-            ComboSettings.AddSeparator();
             ComboSettings.Add("useQCombo", new CheckBox("Use Q"));
             ComboSettings.Add("useQAoE", new CheckBox("Use Q AoE"));
             ComboSettings.Add("useQAoECount", new Slider("Enemy Count >= ", 2, 1, 5));
             ComboSettings.Add("useWCombo", new CheckBox("Use W"));
             ComboSettings.Add("useECombo", new CheckBox("Use E"));
+            ComboSettings.Add("useEDistance", new CheckBox("Use E for Enemy Distance"));
+            ComboSettings.Add("EMaxDistance", new Slider("Enemy Distance < ", 250, 100, 900));
             ComboSettings.Add("useRCombo", new CheckBox("Use R"));
             ComboSettings.Add("useRComboRange", new Slider("Range < ", 2000, 0, 3000));
 
             HarassSettings = Menu.AddSubMenu("Harass Settings", "HarassSettings");
-            HarassSettings.AddSeparator();
             HarassSettings.Add("useQHarass", new CheckBox("Use Q"));
             HarassSettings.Add("useWHarass", new CheckBox("Use W"));
             HarassSettings.Add("useWHarassMana", new Slider("W Mana > ", 20, 0, 100));
             HarassSettings.Add("useEHarass", new CheckBox("Use E"));
             HarassSettings.Add("useEHarassMana", new Slider("E Mana > ", 35, 0, 100));
+            HarassSettings.AddSeparator();
+            HarassSettings.AddLabel("Auto Harass");
+            HarassSettings.Add("autoWHarass", new CheckBox("Auto W", false));
+            HarassSettings.Add("autoWHarassMana", new Slider("W Mana > ", 35, 0, 100));
 
             ClearSettings = Menu.AddSubMenu("Lane Clear Settings", "FarmSettings");
-            ClearSettings.AddSeparator();
             ClearSettings.AddLabel("Lane Clear");
             ClearSettings.Add("useQFarm", new CheckBox("Use Q"));
             ClearSettings.Add("disableRocketsWC", new CheckBox("Only Minigun", false));
@@ -79,11 +82,19 @@ namespace DatJinx
             ClearSettings.AddLabel("Last Hit");
             ClearSettings.Add("disableRocketsLH", new CheckBox("Only Minigun"));
 
-            AutoSettings = Menu.AddSubMenu("Auto Settings", "AutoSettings");
-            AutoSettings.AddSeparator();
+            AutoSettings = Menu.AddSubMenu("Misc Settings", "MiscSettings");
             AutoSettings.Add("gapcloser", new CheckBox("Gapcloser E"));
             AutoSettings.Add("interrupter", new CheckBox("Interrupter E"));
             AutoSettings.Add("CCE", new CheckBox("Auto E on CC"));
+            AutoSettings.Add("Casting", new CheckBox("Dont use Spell while Enemy Spell Casting",false));
+
+            Predictions = Menu.AddSubMenu("Prediction Settings", "PredictionSettings");
+            var Style = Predictions.Add("style", new Slider("Min Prediction", 1, 0, 2));
+            Style.OnValueChange += delegate
+            {
+                Style.DisplayName = "Min Prediction: " + new[] { "Low", "Medium", "High" }[Style.CurrentValue];
+            };
+            Style.DisplayName = "Min Prediction: " + new[] { "Low", "Medium", "High" }[Style.CurrentValue];
 
             DrawMenu = Menu.AddSubMenu("Drawing Settings");
             DrawMenu.Add("drawRange", new CheckBox("Draw AA Range"));
@@ -128,17 +139,17 @@ namespace DatJinx
 
             if (args.Status == TeleportStatus.Start)
             {
-                //Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + sender.BaseSkinName + " has <font color='#00ff66'>started</font> recall.");
+                Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + sender.BaseSkinName + " has <font color='#00ff66'>started</font> recall.");
             }
 
             if (args.Status == TeleportStatus.Abort)
             {
-                //Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + sender.BaseSkinName + " has <font color='#ff0000'>aborted</font> recall.");
+                Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + sender.BaseSkinName + " has <font color='#ff0000'>aborted</font> recall.");
             }
 
             if (args.Status == TeleportStatus.Finish)
             {
-                //Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + sender.BaseSkinName + " has <font color='#fdff00'>finished</font> recall.");
+                Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + sender.BaseSkinName + " has <font color='#fdff00'>finished</font> recall.");
             }
         }
         //Recall Tracker Finish
@@ -148,7 +159,22 @@ namespace DatJinx
 
             if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
             {
-                Combo();
+                var style = Predictions["style"].Cast<Slider>().CurrentValue;
+                switch (style)
+                {
+                    case 0:
+                        ComboLow();
+                        break;
+                    case 1:
+                        ComboMedium();
+                        break;
+                    case 2:
+                        ComboHigh();
+                        break;
+                    default:
+                        ComboMedium();
+                        break;
+                }
             }
             if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Harass))
             {
@@ -163,7 +189,8 @@ namespace DatJinx
                 LastHit();
             }
             Auto();
-            KS();        
+            KS();
+            AutoW();      
         }
         public static void Auto()
         {
@@ -184,9 +211,16 @@ namespace DatJinx
                 }
             }
         }
-        public static void AutoR()
+        public static void AutoW()
         {
+            var targetW = TargetSelector.GetTarget(W.Range, DamageType.Physical);
+            var wPred = W.GetPrediction(targetW);
 
+            if (HarassSettings["autoWHarass"].Cast<CheckBox>().CurrentValue &&
+                wPred.HitChance >= HitChance.High && W.IsReady() && targetW.IsValidTarget(W.Range) && _Player.ManaPercent > HarassSettings["autoWHarassMana"].Cast<Slider>().CurrentValue)
+            {
+                W.Cast(targetW);
+            }
         }
         public static void LastHit()
         {
@@ -341,13 +375,77 @@ namespace DatJinx
                 W.Cast(targetW);
             }
             if (ComboSettings["useRCombo"].Cast<CheckBox>().CurrentValue && R.IsReady() && rtarget.IsValidTarget(R.Range) &&
-                RDamageHesap.CalculateDamage(rtarget, true) >= rtarget.Health && rtarget.Distance(_Player) > _Player.AttackRange)
+                RDamage(rtarget) >= rtarget.Health && rtarget.Distance(_Player) > _Player.AttackRange)
             {               
                 R.Cast(rtarget);
-                Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + rtarget.BaseSkinName + " has <font color='#E238EC'>sniped!</font>");
+                //Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + rtarget.BaseSkinName + " has <font color='#E238EC'>sniped!</font>");
             }
         }
-        public static void Combo()
+        public static void ComboLow()
+        {
+            var targetW = TargetSelector.GetTarget(W.Range, DamageType.Physical);
+            var target = TargetSelector.GetTarget((!FishBonesActive ? _Player.AttackRange + FishBonesBonus : _Player.AttackRange) + 300, DamageType.Physical);
+            var rtarget = TargetSelector.GetTarget(3000, DamageType.Physical);
+            var wPred = W.GetPrediction(targetW);
+
+            Orbwalker.ForcedTarget = null;
+
+            if (Orbwalker.IsAutoAttacking) return;
+
+            // E LOGİC
+
+            if (ComboSettings["useECombo"].Cast<CheckBox>().CurrentValue && (target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Fear) || target.HasBuffOfType(BuffType.Knockup) || target.HasBuffOfType(BuffType.Taunt)))
+            {
+                E.Cast(target);
+            }
+
+            if (ComboSettings["useEDistance"].Cast<CheckBox>().CurrentValue && targetW.Distance(_Player) < ComboSettings["EMaxDistance"].Cast<Slider>().CurrentValue)
+            {
+                E.Cast(targetW);
+            }
+
+            // W LOGİC
+            if (ComboSettings["useWCombo"].Cast<CheckBox>().CurrentValue && W.IsReady() && targetW.Distance(_Player) > _Player.AttackRange && wPred.HitChance >= HitChance.Low &&
+                targetW.IsValidTarget(W.Range))
+            {
+                W.Cast(targetW);
+            }
+
+            if (ComboSettings["useQAoE"].Cast<CheckBox>().CurrentValue)
+            {
+                var enemycount = ComboSettings["useQAoECount"].Cast<Slider>().CurrentValue;
+                // ALAN(AOE) LOGİC
+                foreach (var enemy in EntityManager.Heroes.Enemies.Where(
+                    a => a.IsValidTarget(MinigunRange(a) + FishBonesBonus))
+                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(200) >= enemycount && (enemy.NetworkId == target.NetworkId || enemy.Distance(target) < 150)))
+                {
+                    if (!FishBonesActive)
+                    {
+                        Q.Cast();
+                    }
+                    Orbwalker.ForcedTarget = enemy;
+                    return;
+                }
+            }
+
+            // Q LOGİC
+            if (ComboSettings["useQCombo"].Cast<CheckBox>().CurrentValue && FishBonesActive)
+            {
+                if (target.Distance(_Player) <= _Player.AttackRange - FishBonesBonus)
+                {
+                    Q.Cast();
+                }
+            }
+            else if (ComboSettings["useQCombo"].Cast<CheckBox>().CurrentValue)
+            {
+                if (target.Distance(_Player) > _Player.AttackRange)
+                {
+                    Q.Cast();
+                }
+            }
+
+        } //COMBO BİTİŞ
+        public static void ComboMedium()
         {           
             var targetW = TargetSelector.GetTarget(W.Range, DamageType.Physical);
             var target = TargetSelector.GetTarget((!FishBonesActive ? _Player.AttackRange + FishBonesBonus : _Player.AttackRange) + 300, DamageType.Physical);
@@ -363,7 +461,12 @@ namespace DatJinx
             if (ComboSettings["useECombo"].Cast<CheckBox>().CurrentValue && (target.HasBuffOfType(BuffType.Snare) ||  target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Fear) || target.HasBuffOfType(BuffType.Knockup) || target.HasBuffOfType(BuffType.Taunt)))
             {
                 E.Cast(target);
-            }               
+            }
+
+            if (ComboSettings["useEDistance"].Cast<CheckBox>().CurrentValue && targetW.Distance(_Player) < ComboSettings["EMaxDistance"].Cast<Slider>().CurrentValue)
+            {
+                E.Cast(targetW);
+            }
 
             // W LOGİC
             if (ComboSettings["useWCombo"].Cast<CheckBox>().CurrentValue && W.IsReady() && targetW.Distance(_Player) > _Player.AttackRange && wPred.HitChance >= HitChance.Medium &&
@@ -406,6 +509,70 @@ namespace DatJinx
             }
 
     } //COMBO BİTİŞ
+        public static void ComboHigh()
+        {
+            var targetW = TargetSelector.GetTarget(W.Range, DamageType.Physical);
+            var target = TargetSelector.GetTarget((!FishBonesActive ? _Player.AttackRange + FishBonesBonus : _Player.AttackRange) + 300, DamageType.Physical);
+            var rtarget = TargetSelector.GetTarget(3000, DamageType.Physical);
+            var wPred = W.GetPrediction(targetW);
+
+            Orbwalker.ForcedTarget = null;
+
+            if (Orbwalker.IsAutoAttacking) return;
+
+            // E LOGİC
+
+            if (ComboSettings["useECombo"].Cast<CheckBox>().CurrentValue && (target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Fear) || target.HasBuffOfType(BuffType.Knockup) || target.HasBuffOfType(BuffType.Taunt)))
+            {
+                E.Cast(target);
+            }
+
+            if (ComboSettings["useEDistance"].Cast<CheckBox>().CurrentValue && targetW.Distance(_Player) < ComboSettings["EMaxDistance"].Cast<Slider>().CurrentValue)
+            {
+                E.Cast(targetW);
+            }
+
+            // W LOGİC
+            if (ComboSettings["useWCombo"].Cast<CheckBox>().CurrentValue && W.IsReady() && targetW.Distance(_Player) > _Player.AttackRange && wPred.HitChance >= HitChance.High &&
+                targetW.IsValidTarget(W.Range))
+            {
+                W.Cast(targetW);
+            }
+
+            if (ComboSettings["useQAoE"].Cast<CheckBox>().CurrentValue)
+            {
+                var enemycount = ComboSettings["useQAoECount"].Cast<Slider>().CurrentValue;
+                // ALAN(AOE) LOGİC
+                foreach (var enemy in EntityManager.Heroes.Enemies.Where(
+                    a => a.IsValidTarget(MinigunRange(a) + FishBonesBonus))
+                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(200) >= enemycount && (enemy.NetworkId == target.NetworkId || enemy.Distance(target) < 150)))
+                {
+                    if (!FishBonesActive)
+                    {
+                        Q.Cast();
+                    }
+                    Orbwalker.ForcedTarget = enemy;
+                    return;
+                }
+            }
+
+            // Q LOGİC
+            if (ComboSettings["useQCombo"].Cast<CheckBox>().CurrentValue && FishBonesActive)
+            {
+                if (target.Distance(_Player) <= _Player.AttackRange - FishBonesBonus)
+                {
+                    Q.Cast();
+                }
+            }
+            else if (ComboSettings["useQCombo"].Cast<CheckBox>().CurrentValue)
+            {
+                if (target.Distance(_Player) > _Player.AttackRange)
+                {
+                    Q.Cast();
+                }
+            }
+
+        } //COMBO BİTİŞ
         //DAMAGE HESAP
         public static int WDamage(Obj_AI_Base target)
         {
@@ -423,12 +590,25 @@ namespace DatJinx
                                     + 1 * _Player.FlatMagicDamageMod);
         }
 
-        public static int RDamage(Obj_AI_Base target)
+        public static float RDamage(Obj_AI_Base target)
         {
-            return
-                (int)
-                    (new double[] { 250, 350, 450 }[R.Level - 1]
-                                    + 0.5 * _Player.TotalAttackDamage);
+             if (!DatJinx.Program.R.IsLearned) return 0;
+            var level = DatJinx.Program.R.Level - 1;
+
+            if (target.Distance(Program._Player) < 1350)
+            {
+                return Program._Player.CalculateDamageOnUnit(target, DamageType.Physical,
+                    (float)
+                        (new double[] { 25, 35, 45 }[level] +
+                         new double[] { 25, 30, 35 }[level] / 100 * (target.MaxHealth - target.Health) +
+                         0.1 * Program._Player.TotalAttackDamage));
+            }
+
+            return Program._Player.CalculateDamageOnUnit(target, DamageType.Physical,
+                (float)
+                    (new double[] { 250, 350, 450 }[level] +
+                     new double[] { 25, 30, 35 }[level] / 100 * (target.MaxHealth - target.Health) +
+                     1 * Program._Player.TotalAttackDamage));
         }
 
         //DRAWİNGS
