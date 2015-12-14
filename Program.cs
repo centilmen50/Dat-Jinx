@@ -344,7 +344,7 @@ namespace DatJinx
                 RDamageHesap.CalculateDamage(rtarget, true) >= rtarget.Health && rtarget.Distance(_Player) > _Player.AttackRange)
             {               
                 R.Cast(rtarget);
-                Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + rtarget.BaseSkinName + " has <font color='#E238EC'>sniped!</font>");
+                Chat.Print("<font color='#ffffff'>[" + FormatTime(Game.Time) + "]</font> " + rtarget.BaseSkinName + " has been <font color='#E238EC'>sniped!</font>");
             }
         }
         public static void Combo()
