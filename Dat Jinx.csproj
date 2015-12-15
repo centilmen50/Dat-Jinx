@@ -38,18 +38,14 @@
     <Reference Include="EloBuddy">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\EloBuddy.dll</HintPath>
     </Reference>
-    <Reference Include="EloBuddy.Sandbox">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\EloBuddy.Sandbox.dll</HintPath>
-    </Reference>
     <Reference Include="EloBuddy.SDK">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\EloBuddy.SDK.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.Direct3D9, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Users\Mertss\AppData\Roaming\EloBuddy\Addons\Libraries\SharpDX.Direct3D9.dll</HintPath>
+    <Reference Include="SharpDX.Direct3D9">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\SharpDX.Direct3D9.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
