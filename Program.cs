@@ -32,7 +32,7 @@ namespace DatJinx
         static Item Healthpot;
         public static DamageIndicator Indicator;
         public static Tracker Tracks;
-
+        public static readonly string[] JungleMobsList = { "SRU_Red", "SRU_Blue", "SRU_Dragon", "SRU_Baron", "SRU_Gromp", "SRU_Murkwolf", "SRU_Razorbeak", "SRU_Krug", "Sru_Crab" };
         public static Menu Menu, ComboSettings, HarassSettings, ClearSettings, AutoSettings, DrawMenu, Predictions, Items, Tracker;
 
         private static void Loading_OnLoadingComplete(EventArgs args)
@@ -53,7 +53,8 @@ namespace DatJinx
                 AllowedCollisionCount = 0
             };
             E = new Spell.Skillshot(SpellSlot.E, 900, SkillShotType.Circular, 1200, 1750, 1);
-            R = new Spell.Skillshot(SpellSlot.R, 2000, SkillShotType.Linear, 700, 1500, 140);            
+            R = new Spell.Skillshot(SpellSlot.R, 2000, SkillShotType.Linear, 700, 1500, 140); 
+                       
 
             Menu = MainMenu.AddMenu("Dat Jinx", "DatJinx");
 
@@ -92,6 +93,15 @@ namespace DatJinx
             ClearSettings.Add("useQJungle", new CheckBox("Use Q"));
             ClearSettings.Add("useWJungle", new CheckBox("Use W"));
             ClearSettings.Add("useWHarassMana", new Slider("W Mana > ", 20, 0, 100));
+            ClearSettings.AddSeparator();
+            ClearSettings.Add("RJungleSteal", new CheckBox("Use R Jungle Steal"));
+            ClearSettings.AddSeparator();
+            ClearSettings.AddLabel("Epics");
+            ClearSettings.Add("SRU_Baron", new CheckBox("Baron"));
+            ClearSettings.Add("SRU_Dragon", new CheckBox("Dragon"));
+            ClearSettings.AddLabel("Buffs");
+            ClearSettings.Add("SRU_Blue", new CheckBox("Blue", false));
+            ClearSettings.Add("SRU_Red", new CheckBox("Red", false));
 
             AutoSettings = Menu.AddSubMenu("Misc Settings", "MiscSettings");
             AutoSettings.Add("gapcloser", new CheckBox("Auto E for Gapcloser"));
@@ -807,6 +817,39 @@ namespace DatJinx
                          1 * _Player.TotalAttackDamage));
 
             
+        }
+
+        private static void JungleSteal()
+        {
+            var rRange = ComboSettings["useRComboRange"].Cast<Slider>().CurrentValue;
+                    var jungleMob =
+                        EntityManager.MinionsAndMonsters.Monsters.FirstOrDefault(
+                            u =>
+                            u.IsVisible && JungleMobsList.Contains(u.BaseSkinName)
+                            && RDamage(u) >= u.Health);
+
+                    if (jungleMob == null)
+                    {
+                        return;
+                    }
+
+                    if (!ClearSettings[jungleMob.BaseSkinName].Cast<CheckBox>().CurrentValue)
+                    {
+                        return;
+                    }
+
+                    var enemy = EntityManager.Heroes.Enemies.Where(t => t.Distance(jungleMob) <= 200).OrderByDescending(t => t.Distance(jungleMob));
+
+                    if (enemy.Any())
+                    {
+                        foreach (var target in enemy.Where(target => Player.Instance.Distance(target) < rRange))
+                        {
+                            if (target.Distance(jungleMob) <= 200)
+                            {
+                                R.Cast(target);
+                            }
+                        }
+                    }                                           
         }
 
         //DRAWİNGS
