@@ -1,0 +1,204 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{0DC28488-EC4F-4788-B9BA-F8030CFFB617}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DatJinx</RootNamespace>
+    <AssemblyName>DatJinx</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\Release</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\..\..\..\Desktop\Elobuddy\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EloBuddy">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\EloBuddy.dll</HintPath>
+    </Reference>
+    <Reference Include="EloBuddy.SDK">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\EloBuddy.SDK.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D9">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\EloBuddy\System\SharpDX.Direct3D9.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Exist\DamageIndıcator.cs" />
+    <Compile Include="Exist\RDamageHesap.cs" />
+    <Compile Include="Exist\Tracker.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Exist\UltimateHandler.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\IsReady.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonerflash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonerdot.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\itemsmiteaoe.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\s5_summonersmiteduel.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\s5_summonersmiteplayerganker.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\s5_summonersmitequick.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonerbarrier.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonerboost.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonerclairvoyance.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonerexhaust.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonerhaste.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonerheal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonermana.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonerodingarrison.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonerrevive.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonersmite.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners - Copy\summonerteleport.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\itemsmiteaoe.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\s5_summonersmiteduel.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\s5_summonersmiteplayerganker.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\s5_summonersmitequick.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonerbarrier.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonerboost.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonerclairvoyance.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonerdot.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonerexhaust.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonerflash.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonerhaste.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonerheal.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonermana.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonerodingarrison.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonerrevive.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonersmite.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonersnowball.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Summoners\summonerteleport.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\hud.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\hud2.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

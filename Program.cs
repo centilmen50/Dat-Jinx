@@ -10,6 +10,7 @@ using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using SharpDX;
+using DatJinx;
 
 namespace DatJinx
 {
@@ -19,20 +20,20 @@ namespace DatJinx
         {
             get { return ObjectManager.Player; }
         }
-
+        private static void Main(string[] args)
+        {
+            Loading.OnLoadingComplete += Loading_OnLoadingComplete;
+        }
 
         public static Spell.Active Q;
         public static Spell.Skillshot W;
         public static Spell.Skillshot E;
         public static Spell.Skillshot R;
         static Item Healthpot;
+        public static DamageIndicator Indicator;
+        public static Tracker Tracks;
 
-        public static Menu Menu, ComboSettings, HarassSettings, ClearSettings, AutoSettings, DrawMenu, Predictions, Items;
-
-        private static void Main(string[] args)
-        {
-            Loading.OnLoadingComplete += Loading_OnLoadingComplete;
-        }
+        public static Menu Menu, ComboSettings, HarassSettings, ClearSettings, AutoSettings, DrawMenu, Predictions, Items, Tracker;
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
@@ -41,7 +42,9 @@ namespace DatJinx
                 return;
             }
             Teleport.OnTeleport += Teleport_OnTeleport;
-
+            
+            Indicator = new DamageIndicator();
+            Tracks = new DatJinx.Tracker();
             Healthpot = new Item(2003, 0);
             Q = new Spell.Active(SpellSlot.Q);
             W = new Spell.Skillshot(SpellSlot.W, 1450, SkillShotType.Linear, 600, 3300, 75)
@@ -57,7 +60,7 @@ namespace DatJinx
             ComboSettings = Menu.AddSubMenu("Combo Settings", "ComboSettings");
             ComboSettings.Add("useQCombo", new CheckBox("Use Q"));
             ComboSettings.Add("useQAoE", new CheckBox("Use Q AoE"));
-            ComboSettings.Add("useQAoECount", new Slider("Q Enemy Count >= ", 2, 1, 5));
+            ComboSettings.Add("useQAoECount", new Slider("Q Enemy Count >= ", 3, 1, 5));
             ComboSettings.Add("useWCombo", new CheckBox("Use W"));
             ComboSettings.Add("useECombo", new CheckBox("Use E"));
             ComboSettings.Add("useEDistance", new CheckBox("Use E for Enemy Distance"));
@@ -128,6 +131,10 @@ namespace DatJinx
             DrawMenu.AddSeparator();
             DrawMenu.AddLabel("Recall Tracker");
             DrawMenu.Add("draw.Recall", new CheckBox("Chat Print"));
+
+            Tracker = Menu.AddSubMenu("Tracker");
+            Tracker.Add("draw.Cooldowns", new CheckBox("Draw Cooldowns"));
+            Tracker.Add("draw.Disable", new CheckBox("Disable Draw"));
 
             Game.OnTick += Game_OnTick;
             Gapcloser.OnGapcloser += Gapcloser_OnGapCloser;
@@ -506,13 +513,12 @@ namespace DatJinx
         {// KİLLSTEAL START
             var Distance = ComboSettings["useRComboRange"].Cast<Slider>().CurrentValue;
             var targetW = TargetSelector.GetTarget(W.Range, DamageType.Physical);
-            var target = TargetSelector.GetTarget((!FishBonesActive ? _Player.AttackRange + FishBonesBonus : _Player.AttackRange) + 300, DamageType.Physical);
-            var rtarget = TargetSelector.GetTarget(Distance, DamageType.Physical);           
+            var target = TargetSelector.GetTarget((!FishBonesActive ? _Player.AttackRange + FishBonesBonus : _Player.AttackRange) + 300, DamageType.Physical);         
             var wPred = W.GetPrediction(targetW);
 
             foreach (var enemy in EntityManager.Heroes.Enemies)
             {
-                if (ComboSettings["useRCombo"].Cast<CheckBox>().CurrentValue && R.IsReady() && enemy.Distance(_Player) < Distance &&
+                if (ComboSettings["useRCombo"].Cast<CheckBox>().CurrentValue && R.IsReady() && enemy.Distance(_Player) <= Distance &&
                 RDamage(enemy) >= enemy.Health && !enemy.IsZombie && !enemy.IsDead)
                 {
                     R.Cast(enemy);
@@ -579,8 +585,8 @@ namespace DatJinx
                 var enemycount = ComboSettings["useQAoECount"].Cast<Slider>().CurrentValue;
                 // ALAN(AOE) LOGİC
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(
-                    a => a.IsValidTarget(MinigunRange(a) + FishBonesBonus))
-                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(_Player.AttackRange) >= enemycount && (enemy.NetworkId == target.NetworkId || enemy.Distance(target) < 140)))
+                    a => a.IsValidTarget(MinigunRange(a) + FishBonesBonus))                               // alta enemy.distance önüne ekle enemy.NetworkId == target.NetworkId || 
+                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(_Player.AttackRange) >= enemycount && (enemy.Distance(target) < 140)))
                 {
                     if (!FishBonesActive)
                     {
@@ -656,8 +662,8 @@ namespace DatJinx
                 var enemycount = ComboSettings["useQAoECount"].Cast<Slider>().CurrentValue;
                 // ALAN(AOE) LOGİC
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(
-                    a => a.IsValidTarget(MinigunRange(a) + FishBonesBonus))
-                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(_Player.AttackRange) >= enemycount && (enemy.NetworkId == target.NetworkId || enemy.Distance(target) < 140)))
+                    a => a.IsValidTarget(MinigunRange(a) + FishBonesBonus)) //                                        // alta enemy.distance önüne ekle enemy.NetworkId == target.NetworkId || 
+                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(_Player.AttackRange) >= enemycount && (enemy.Distance(target) < 140)))
                 {
                     if (!FishBonesActive)
                     {
@@ -733,8 +739,8 @@ namespace DatJinx
                 var enemycount = ComboSettings["useQAoECount"].Cast<Slider>().CurrentValue;
                 // ALAN(AOE) LOGİC
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(
-                    a => a.IsValidTarget(MinigunRange(a) + FishBonesBonus))
-                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(_Player.AttackRange) >= enemycount && (enemy.NetworkId == target.NetworkId || enemy.Distance(target) < 140)))
+                    a => a.IsValidTarget(MinigunRange(a) + FishBonesBonus)) //                                                  // alta enemy.distance önüne ekle enemy.NetworkId == target.NetworkId || 
+                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(_Player.AttackRange) >= enemycount && (enemy.Distance(target) < 140)))
                 {
                     if (!FishBonesActive)
                     {
