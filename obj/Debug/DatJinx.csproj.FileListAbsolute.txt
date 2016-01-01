@@ -1,3 +1,4 @@
 C:\Desktop\Elobuddy\JinxBuddy.exe.config
 C:\Desktop\Elobuddy\DatJinx.exe.config
 C:\Users\Mertss\Desktop\Elobuddy\DatJinx.exe.config
+C:\Users\Mertss\Desktop\Desktop\Elobuddy\DatJinx.exe.config

@@ -33,7 +33,7 @@ namespace DatJinx
         public static DamageIndicator Indicator;
         public static Tracker Tracks;
         public static readonly string[] JungleMobsList = { "SRU_Red", "SRU_Blue", "SRU_Dragon", "SRU_Baron", "SRU_Gromp", "SRU_Murkwolf", "SRU_Razorbeak", "SRU_Krug", "Sru_Crab" };
-        public static Menu Menu, ComboSettings, HarassSettings, ClearSettings, AutoSettings, DrawMenu, Predictions, Items, Tracker;
+        public static Menu Menu, ComboSettings, HarassSettings, ClearSettings, AutoSettings, DrawMenu, Predictions, Items, Tracker, Skin;
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
@@ -108,6 +108,10 @@ namespace DatJinx
             AutoSettings.Add("interrupter", new CheckBox("Auto E for Interrupter"));
             AutoSettings.Add("CCE", new CheckBox("Auto E on Enemy CC"));
             AutoSettings.Add("Casting", new CheckBox("Dont use Spell while Enemy Spell Casting",false));
+
+            Skin = Menu.AddSubMenu("Skin Changer", "SkinChanger");
+            Skin.Add("checkSkin", new CheckBox("Use Skin Changer"));
+            Skin.Add("skin.Id", new Slider("Skin", 1, 0, 3));
 
             Items = Menu.AddSubMenu("Item Settings", "ItemSettings");
             Items.Add("useHP", new CheckBox("Use Health Potion"));
@@ -244,6 +248,24 @@ namespace DatJinx
                 }
             }
         }
+
+        private static void OnGameUpdate(EventArgs args)
+        {
+            if (checkSkin())
+            {
+                Player.SetSkinId(SkinId());
+            }
+        }
+
+        public static int SkinId()
+        {
+            return Skin["skin.Id"].Cast<Slider>().CurrentValue;
+        }
+        public static bool checkSkin()
+        {
+            return Skin["checkSkin"].Cast<CheckBox>().CurrentValue;
+        }
+
         public static void Auto()
         {//AUTO SETTİNGS START
             var useQSS = Items["useQSS"].Cast<CheckBox>().CurrentValue;
@@ -268,6 +290,9 @@ namespace DatJinx
                 
                 if (useQSS && Item.HasItem(3140) && Item.CanUseItem(3140))
                     Item.UseItem(3140);
+
+                if (useQSS && Item.HasItem(3139) && Item.CanUseItem(3139))
+                    Item.UseItem(3139);
             }
         }//AUTO SETTİNGS END
         public static void AutoW()
@@ -406,7 +431,7 @@ namespace DatJinx
                         .FirstOrDefault(minion => EntityManager.MinionsAndMonsters.EnemyMinions.Count(
                             a => a.Distance(minion) < 150 && a.Health < _Player.GetAutoAttackDamage(a)*1.1) > 1);
 
-                if (unit != null)
+                if (unit != null && !unit.IsDead && !unit.IsZombie)
                 {
                     if (!FishBonesActive)
                     {
@@ -462,7 +487,7 @@ namespace DatJinx
                                 .OrderBy(TargetSelector.GetPriority))
                     {
                         if (enemy.CountEnemiesInRange(_Player.AttackRange) >= qcount &&
-                            (enemy.NetworkId == target.NetworkId || enemy.Distance(target) < 140)) //değiştirildi
+                            (enemy.NetworkId == target.NetworkId || enemy.Distance(target) < 140) && !enemy.IsDead && !enemy.IsZombie) //değiştirildi
                         {
                             if (!FishBonesActive)
                             {
@@ -596,7 +621,7 @@ namespace DatJinx
                 // ALAN(AOE) LOGİC
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(
                     a => a.IsValidTarget(MinigunRange(a) + FishBonesBonus))                               // alta enemy.distance önüne ekle enemy.NetworkId == target.NetworkId || 
-                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(_Player.AttackRange) >= enemycount && (enemy.Distance(target) < 140)))
+                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(_Player.AttackRange) >= enemycount && (enemy.Distance(target) < 140) && !enemy.IsDead && !enemy.IsZombie))
                 {
                     if (!FishBonesActive)
                     {
@@ -673,7 +698,7 @@ namespace DatJinx
                 // ALAN(AOE) LOGİC
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(
                     a => a.IsValidTarget(MinigunRange(a) + FishBonesBonus)) //                                        // alta enemy.distance önüne ekle enemy.NetworkId == target.NetworkId || 
-                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(_Player.AttackRange) >= enemycount && (enemy.Distance(target) < 140)))
+                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(_Player.AttackRange) >= enemycount && (enemy.Distance(target) < 140) && !enemy.IsDead && !enemy.IsZombie))
                 {
                     if (!FishBonesActive)
                     {
@@ -750,7 +775,7 @@ namespace DatJinx
                 // ALAN(AOE) LOGİC
                 foreach (var enemy in EntityManager.Heroes.Enemies.Where(
                     a => a.IsValidTarget(MinigunRange(a) + FishBonesBonus)) //                                                  // alta enemy.distance önüne ekle enemy.NetworkId == target.NetworkId || 
-                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(_Player.AttackRange) >= enemycount && (enemy.Distance(target) < 140)))
+                    .OrderBy(TargetSelector.GetPriority).Where(enemy => enemy.CountEnemiesInRange(_Player.AttackRange) >= enemycount && (enemy.Distance(target) < 140) && !enemy.IsDead && !enemy.IsZombie))
                 {
                     if (!FishBonesActive)
                     {
