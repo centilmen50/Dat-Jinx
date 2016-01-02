@@ -151,6 +151,7 @@ namespace DatJinx
             Tracker.Add("draw.Disable", new CheckBox("Disable Draw"));
 
             Game.OnTick += Game_OnTick;
+            Game.OnUpdate += OnGameUpdate;
             Gapcloser.OnGapcloser += Gapcloser_OnGapCloser;
             Interrupter.OnInterruptableSpell += Interrupter_OnInterruptableSpell;
             Drawing.OnDraw += Drawing_OnDraw;
